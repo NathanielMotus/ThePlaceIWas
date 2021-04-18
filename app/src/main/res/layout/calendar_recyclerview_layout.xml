@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="50"
+        android:id="@+id/calendar_recyclerview_date_text"
+        android:text="Wednesday october 31st 2021"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="10"
+        android:id="@+id/calendar_recyclerview_group0_text"
+        android:gravity="center_horizontal"
+        android:text="1"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="10"
+        android:id="@+id/calendar_recyclerview_group1_text"
+        android:gravity="center_horizontal"
+        android:text="1"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="10"
+        android:id="@+id/calendar_recyclerview_group2_text"
+        android:gravity="center_horizontal"
+        android:text="1"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="10"
+        android:id="@+id/calendar_recyclerview_group3_text"
+        android:gravity="center_horizontal"
+        android:text="1"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="10"
+        android:id="@+id/calendar_recyclerview_group4_text"
+        android:gravity="center_horizontal"
+        android:text="1"/>
+
+
+</LinearLayout>

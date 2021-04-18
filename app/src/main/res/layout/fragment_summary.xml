@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.SummaryFragment">
+
+    <LinearLayout
+        android:id="@+id/summary_title_linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10sp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="50"
+            android:text="From"
+            android:gravity="center_horizontal"
+            android:textSize="16sp"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="50"
+            android:text="To"
+            android:gravity="center_horizontal"
+            android:textSize="16sp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_below="@id/summary_title_linear"
+        android:id="@+id/summary_date_boxes_linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10sp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/summary_start_date_text"
+            android:layout_weight="50"
+            android:text="DD/MM/YYYY"
+            android:layout_marginHorizontal="10sp"
+            android:gravity="center_horizontal"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/summary_end_date_text"
+            android:layout_weight="50"
+            android:text="DD/MM/YYYY"
+            android:layout_marginHorizontal="10sp"
+            android:gravity="center_horizontal"/>
+    </LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/summary_date_boxes_linear"
+        android:id="@+id/summary_add_button"
+        android:text="Add here as a new place"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/summary_add_button"
+        android:id="@+id/summary_header_linear"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="15"
+            android:text="N°"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="50"
+            android:text="Place"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="20"
+            android:text="Days at"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="15"
+            android:text="Cal."/>
+
+    </LinearLayout>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/summary_listview"
+        android:layout_below="@id/summary_header_linear"/>
+
+
+
+</RelativeLayout>

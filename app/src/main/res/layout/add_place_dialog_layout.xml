@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_place_dialog_name_text"
+        android:layout_alignBaseline="@id/add_place_dialog_name_edit"
+        android:text="Name :"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_place_dialog_name_edit"
+        android:layout_toRightOf="@id/add_place_dialog_name_text"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_place_dialog_accuracy_text"
+        android:layout_alignBaseline="@id/add_place_dialog_accuracy_edit"
+        android:text="Accuracy :"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:id="@+id/add_place_dialog_accuracy_edit"
+        android:layout_below="@id/add_place_dialog_name_edit"
+        android:layout_toRightOf="@id/add_place_dialog_accuracy_text"
+        android:text="9999"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/add_place_dialog_accuracy_edit"
+        android:layout_alignBaseline="@id/add_place_dialog_accuracy_edit"
+        android:text="m"/>
+
+
+</RelativeLayout>
