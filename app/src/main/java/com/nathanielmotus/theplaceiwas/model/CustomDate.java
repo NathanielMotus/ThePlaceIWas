@@ -1,7 +1,10 @@
 package com.nathanielmotus.theplaceiwas.model;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Calendar;
 
 public class CustomDate {
 
@@ -55,6 +58,16 @@ public class CustomDate {
 
     public void setYear(int year) {
         mYear = year;
+    }
+
+    //**********************************************************************************************
+    //Modifiers
+    //**********************************************************************************************
+    public static CustomDate todayToCustomDate() {
+        return new CustomDate(Calendar.getInstance().get(Calendar.DAY_OF_WEEK),
+                Calendar.getInstance().get(Calendar.DAY_OF_MONTH),
+                Calendar.getInstance().get(Calendar.MONTH),
+                Calendar.getInstance().get(Calendar.YEAR));
     }
 
     //**********************************************************************************************

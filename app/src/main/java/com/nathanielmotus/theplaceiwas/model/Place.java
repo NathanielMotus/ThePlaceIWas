@@ -20,6 +20,7 @@ public class Place {
     private Location mLocation;
     private float mAccuracy;
     private boolean mInCalendar;
+    private int mDayCount;
     private static ArrayList<Place> sPlaces=new ArrayList<>();
 
     //**********************************************************************************************
@@ -32,8 +33,8 @@ public class Place {
         mLocation = location;
         mAccuracy = accuracy;
         mInCalendar = inCalendar;
+        mDayCount=0;
         sPlaces.add(this);
-        Collections.sort(sPlaces,new PlaceComparator());
     }
 
     //**********************************************************************************************
@@ -88,6 +89,14 @@ public class Place {
         Place.sPlaces = places;
     }
 
+    public int getDayCount() {
+        return mDayCount;
+    }
+
+    public void setDayCount(int dayCount) {
+        mDayCount = dayCount;
+    }
+
     //**********************************************************************************************
     //Modifiers
     //**********************************************************************************************
@@ -97,6 +106,42 @@ public class Place {
 
     public static void removePlace(Place place) {
         sPlaces.remove(place);
+    }
+
+    public static void sortPlaces() {
+        Collections.sort(sPlaces,new PlaceComparator());
+    }
+
+    public static void addInFirstPositionToPlaces(Place place) {
+        sPlaces.add(0,place);
+    }
+
+    public void addDateToHistory(CustomDate customDate) {
+        this.mHistory.add(customDate);
+    }
+
+    public void removeDateFromHistory(CustomDate customDate) {
+        for (CustomDate d:mHistory)
+            if (d.compareTo(customDate)==0)
+                mHistory.remove(d);
+    }
+
+    //**********************************************************************************************
+    //Test
+    //**********************************************************************************************
+    public boolean isInVicinityOf(Place refPlace) {
+        //check whether distance(this,refPlace) is lower than refPlace Accuracy
+
+        return this.mLocation.distanceTo(refPlace.mLocation)<=refPlace.mAccuracy;
+    }
+
+    public boolean hasRecordForToday() {
+        //check whether this already has a record its history for today
+
+        for (CustomDate d:mHistory)
+            if (d.compareTo(CustomDate.todayToCustomDate())==0)
+                return true;
+            return false;
     }
 
     //**********************************************************************************************
@@ -176,11 +221,12 @@ public class Place {
             return jsonArray;
     }
 
-    public static void createPlacesFromJSONArray(JSONArray jsonArray) {
+    public static void createPlacesFromJSONArray(JSONArray jsonArray,CustomDate startDate,CustomDate endDate) {
         Place place;
         try {
             for (int i = 0; i < jsonArray.length(); i++) {
                 place = fromJSONObject((JSONObject) jsonArray.get(i));
+                place.setDayCount(place.countDaysAt(startDate,endDate));
             }
         } catch (JSONException jsonException) {
             jsonException.printStackTrace();

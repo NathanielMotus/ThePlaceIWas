@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.nathanielmotus.theplaceiwas.R;
@@ -27,13 +28,6 @@ public class PlaceListViewAdapter extends BaseAdapter {
         mContext = context;
         mStartDate=new CustomDate(1,1,1,2000);
         mEndDate=new CustomDate(7,31,12,2100);
-    }
-
-    public PlaceListViewAdapter(ArrayList<Place> places, CustomDate startDate, CustomDate endDate, Context context) {
-        mPlaces = places;
-        mStartDate = startDate;
-        mEndDate = endDate;
-        mContext = context;
     }
 
     @Override
@@ -64,8 +58,15 @@ public class PlaceListViewAdapter extends BaseAdapter {
 
         numberView.setText(Integer.toString(position));
         placeView.setText(mPlaces.get(position).getName());
-        daysAtView.setText(Integer.toString(mPlaces.get(position).countDaysAt(mStartDate,mEndDate)));
+//        daysAtView.setText(Integer.toString(mPlaces.get(position).countDaysAt(mStartDate,mEndDate)));
+        daysAtView.setText(Integer.toString(mPlaces.get(position).getDayCount()));
         checkBox.setChecked(mPlaces.get(position).isInCalendar());
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                ((DataProviderActivity)mContext).onPlaceCheckboxClicked(position,isChecked);
+            }
+        });
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,16 +1,15 @@
 package com.nathanielmotus.theplaceiwas.controller;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
 
 import com.nathanielmotus.theplaceiwas.R;
@@ -18,16 +17,18 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.nathanielmotus.theplaceiwas.model.CustomDate;
 import com.nathanielmotus.theplaceiwas.model.DataProviderActivity;
 import com.nathanielmotus.theplaceiwas.model.Place;
 import com.nathanielmotus.theplaceiwas.view.SectionsPagerAdapter;
-import com.nathanielmotus.theplaceiwas.view.SummaryFragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,16 +36,20 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements DataProviderActivity {
-
+//todo : date picker
+    //todo : recyclerview adapter
+    
     private CustomDate mStartDate;
     private CustomDate mEndDate;
     private SectionsPagerAdapter mSectionsPagerAdapter;
+    private Place mNowhereKnownPlace;
 
     public static final int REQUEST_PERMISSION = 1000;
-    private static boolean sAccessCoarseLocation = false;
-    private static boolean sAccessFineLocation = false;
+    private boolean sAccessCoarseLocation = false;
+    private boolean sAccessFineLocation = false;
 
 
     @Override
@@ -56,23 +61,41 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         viewPager.setAdapter(mSectionsPagerAdapter);
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
-        loadPreferences();
-        loadData();
-
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         saveData();
         savePreferences();
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        loadPreferences();
+        loadData();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             checkPermissions();
+        configureCheckLocationWorker();
+    }
+
+    //**********************************************************************************************
+    //Configuration
+    //**********************************************************************************************
+    private void configureCheckLocationWorker() {
+        WorkRequest CheckLocationRequest=new PeriodicWorkRequest.Builder(CheckLocationWorker.class,15, TimeUnit.MINUTES)
+                .build();
+//        WorkRequest CheckLocationRequest=new OneTimeWorkRequest.Builder(CheckLocationWorker.class)
+//                .setInitialDelay(10,TimeUnit.SECONDS)
+//                .build();
+        WorkManager.getInstance(this)
+                .enqueue(CheckLocationRequest);
     }
 
     //**********************************************************************************************
@@ -109,7 +132,13 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
     @Override
     public void onPlaceClicked(int position) {
-        showCreateOrEditPlaceDialog(Place.getPlaces().get(position),null);
+        if (position!=0)
+            showCreateOrEditPlaceDialog(Place.getPlaces().get(position),null);
+    }
+
+    @Override
+    public void onPlaceCheckboxClicked(int position,boolean isChecked) {
+        Place.getPlaces().get(position).setInCalendar(isChecked);
     }
 
     //**********************************************************************************************
@@ -153,6 +182,9 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                     place.setName(nameEdit.getText().toString());
                     place.setAccuracy(Float.parseFloat(accuracyEdit.getText().toString()));
                 }
+                Place.removePlace(mNowhereKnownPlace);
+                Place.sortPlaces();
+                Place.addInFirstPositionToPlaces(mNowhereKnownPlace);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -238,6 +270,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     public static final String DATA_FILENAME = "tpiwdata";
     public static final String JSON_APP_VERSION_CODE = "appVersionCode";
     public static final String JSON_PLACES = "places";
+    public static final String JSON_NOWHERE_KNOWN="nowhereKnown";
 
     private void saveData() {
         IOUtils.saveFileToInternalStorage(getPlacesToJSONObject().toString(), new File(this.getFilesDir(), DATA_FILENAME));
@@ -259,6 +292,8 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put(JSON_APP_VERSION_CODE, IOUtils.getAppVersionCode(this));
+            jsonObject.put(JSON_NOWHERE_KNOWN,mNowhereKnownPlace.toJSONObject());
+            Place.removePlace(mNowhereKnownPlace);
             jsonObject.put(JSON_PLACES, Place.placesToJSONArray());
         } catch (JSONException jsonException) {
             jsonException.printStackTrace();
@@ -268,12 +303,24 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
     private void loadPlacesFromJSONObject(JSONObject jsonObject) {
         JSONArray jsonArray=new JSONArray();
+        JSONObject nowhereKnownJSONObject=new JSONObject();
         try {
+            nowhereKnownJSONObject=jsonObject.getJSONObject(JSON_NOWHERE_KNOWN);
             jsonArray = jsonObject.getJSONArray(JSON_PLACES);
         } catch (JSONException jsonException) {
+            nowhereKnownJSONObject=null;
             jsonArray=null;
         }
-        Place.createPlacesFromJSONArray(jsonArray);
+        if (jsonArray!=null)
+            Place.createPlacesFromJSONArray(jsonArray,mStartDate,mEndDate);
+        if (nowhereKnownJSONObject != null) {
+            mNowhereKnownPlace = Place.fromJSONObject(nowhereKnownJSONObject);
+            mNowhereKnownPlace.setDayCount(mNowhereKnownPlace.countDaysAt(mStartDate,mEndDate));
+        }
+        else
+            mNowhereKnownPlace=new Place("Nowhere known",new ArrayList<>(),new Location(""),500,true);
+        Place.removePlace(mNowhereKnownPlace);
+        Place.addInFirstPositionToPlaces(mNowhereKnownPlace);
     }
 
     //**********************************************************************************************
@@ -340,40 +387,4 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         sAccessFineLocation = (requestCode == REQUEST_PERMISSION && grantResults[ACCESS_FINE_LOCATION_INDEX] == PackageManager.PERMISSION_GRANTED);
     }
 
-    //**********************************************************************************************
-    //GPS
-    //**********************************************************************************************
-
-    private Location getMyLocation() {
-        LocationManager locationManager = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-        try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                checkPermissions();
-            }
-            return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private boolean checkGPSIsActivated() {
-        LocationManager locationManager=(LocationManager)getSystemService(this.LOCATION_SERVICE);
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            return true;
-        else {
-            AlertDialog.Builder builder=new AlertDialog.Builder(this);
-                builder.setTitle("GPS is off !")
-                .setMessage("GPS has to be activated to create here as a new place")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                })
-                .create()
-                .show();
-        }
-        return false;
-    }
 }

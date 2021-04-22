@@ -6,4 +6,5 @@ public interface DataProviderActivity {
     CustomDate getEndDate();
     void onAddPlaceButtonClicked();
     void onPlaceClicked(int position);
+    void onPlaceCheckboxClicked(int position,boolean isChecked);
 }
