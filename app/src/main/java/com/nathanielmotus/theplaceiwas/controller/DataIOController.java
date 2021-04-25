@@ -2,6 +2,7 @@ package com.nathanielmotus.theplaceiwas.controller;
 
 import android.content.Context;
 import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 
 import com.nathanielmotus.theplaceiwas.model.Place;
@@ -52,10 +53,8 @@ public class DataIOController {
         if (mNowhereKnownPlace==null) {
             mNowhereKnownPlace = Place.getPlaces().get(0);
         }
-        Log.i("TEST","SVG :");
-        for (Place p:Place.getPlaces())
-            Log.i("TEST",Place.getPlaces().indexOf(p)+" : "+p.getName());
         IOUtils.saveFileToInternalStorage(getPlacesToJSONObject().toString(), new File(mContext.getFilesDir(), DATA_FILENAME));
+        Log.i("TEST","Data saved : "+Place.getPlaces().size());
     }
 
     public void loadData() {
@@ -65,6 +64,7 @@ public class DataIOController {
         try {
             jsonObject=new JSONObject(jsonString);
         } catch (JSONException jsonException) {
+            Log.i("TEST","Exception : jsonString pas chargé");
             jsonException.printStackTrace();
         }
         loadPlacesFromJSONObject(jsonObject);
@@ -85,18 +85,18 @@ public class DataIOController {
     }
 
     private void loadPlacesFromJSONObject(JSONObject jsonObject) {
-        JSONArray jsonArray=new JSONArray();
-        JSONObject nowhereKnownJSONObject=new JSONObject();
+        JSONArray jsonArray;
+        JSONObject nowhereKnownJSONObject;
         try {
             nowhereKnownJSONObject=jsonObject.getJSONObject(JSON_NOWHERE_KNOWN);
             jsonArray = jsonObject.getJSONArray(JSON_PLACES);
         } catch (JSONException jsonException) {
+            Log.i("TEST","Exception : pas de jsonArray ou pas de nowherKnownJSONObject");
             nowhereKnownJSONObject=null;
             jsonArray=null;
         }
-        if (jsonArray!=null)
+        if (jsonArray!=null){
             Place.createPlacesFromJSONArray(jsonArray,mStartDate,mEndDate);
-        if (nowhereKnownJSONObject != null) {
             mNowhereKnownPlace = Place.fromJSONObject(nowhereKnownJSONObject);
             mNowhereKnownPlace.setDayCount(mNowhereKnownPlace.countDaysAt(mStartDate,mEndDate));
         }
@@ -105,6 +105,4 @@ public class DataIOController {
         Place.removePlace(mNowhereKnownPlace);
         Place.addInFirstPositionToPlaces(mNowhereKnownPlace);
     }
-
-
 }

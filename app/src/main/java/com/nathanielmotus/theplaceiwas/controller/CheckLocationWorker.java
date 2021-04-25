@@ -17,10 +17,12 @@ import java.util.Calendar;
 public class CheckLocationWorker extends Worker {
 
     Context mContext;
+    String mPackageName;
 
     public CheckLocationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         mContext=context;
+        mPackageName=context.getPackageName();
     }
 
     @SuppressLint("MissingPermission")
@@ -29,14 +31,10 @@ public class CheckLocationWorker extends Worker {
     public Result doWork() {
 
         DataIOController dataIOController=new DataIOController(mContext);
-        if (Place.getPlaces().size()==0) {
+        if (!AppStateChecker.isAppInForeground(mContext,mPackageName)) {
             dataIOController.loadData();
-            Log.i("TEST","Load effectué");
+            Log.i("TEST","Data loaded : "+Place.getPlaces().size());
         }
-
-        Log.i("TEST","Avant check");
-        for (Place p:Place.getPlaces())
-            Log.i("TEST", Place.getPlaces().indexOf(p)+" : "+p.getName());
 
         Location location,gpsLocation,networkLocation;
         LocationManager locationManager;
@@ -57,29 +55,20 @@ public class CheckLocationWorker extends Worker {
             location=networkLocation;
 
         if (location != null) {
-            Calendar today=Calendar.getInstance();
-            today.clear(Calendar.HOUR);
-            today.clear(Calendar.MINUTE);
-            today.clear(Calendar.SECOND);
-            today.clear(Calendar.MILLISECOND);
             boolean located=false;
             for (Place p : Place.getPlaces()) {
                 if (Place.getPlaces().indexOf(p)!=0 && location.distanceTo(p.getLocation())<=p.getAccuracy()) {
                     located=true;
                     if (!p.hasRecordForToday()) {
-                        p.addDateToHistory(today);
+                        p.addDateToHistory(IOUtils.today());
                     }
                 }
             }
             if (!located && !Place.getPlaces().get(0).hasRecordForToday())
-                Place.getPlaces().get(0).addDateToHistory(today);
+                Place.getPlaces().get(0).addDateToHistory(IOUtils.today());
             if(located && Place.getPlaces().get(0).hasRecordForToday())
-                Place.getPlaces().get(0).removeDateFromHistory(today);
+                Place.getPlaces().get(0).removeDateFromHistory(IOUtils.today());
         }
-
-        Log.i("TEST","Après check");
-        for (Place p:Place.getPlaces())
-            Log.i("TEST", Place.getPlaces().indexOf(p)+" : "+p.getName());
 
         dataIOController.saveData();
 

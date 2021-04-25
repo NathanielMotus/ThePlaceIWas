@@ -60,13 +60,13 @@ public class SummaryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         configureViews();
-//        populateSummary();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        populateSummary();
+//        populateSummary();
+        updateViews();
     }
 
     //**********************************************************************************************
@@ -77,11 +77,20 @@ public class SummaryFragment extends Fragment {
         mSummaryListView =getActivity().findViewById(R.id.summary_listview);
 
         mStartDateTextView=getActivity().findViewById(R.id.summary_start_date_text);
-        DateFormat df=DateFormat.getDateInstance();
-        mStartDateTextView.setText(df.format(mDataProviderActivity.getStartDate().getTime()));
+        mStartDateTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDataProviderActivity.onStartDateTextClicked();
+            }
+        });
 
         mEndDateTextView=getActivity().findViewById(R.id.summary_end_date_text);
-        mEndDateTextView.setText(df.format(mDataProviderActivity.getEndDate().getTime()));
+        mEndDateTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDataProviderActivity.onEndDateTextClicked();
+            }
+        });
 
         mSummaryAddPlaceButton=getActivity().findViewById(R.id.summary_add_button);
         mSummaryAddPlaceButton.setOnClickListener(new View.OnClickListener() {
@@ -90,6 +99,8 @@ public class SummaryFragment extends Fragment {
                 mDataProviderActivity.onAddPlaceButtonClicked();
             }
         });
+
+        updateViews();
     }
 
     private void createCallbackToParentActivity() {
@@ -99,6 +110,14 @@ public class SummaryFragment extends Fragment {
     private void populateSummary() {
         mPlaceListViewAdapter=new PlaceListViewAdapter(Place.getPlaces(),this.getContext());
         mSummaryListView.setAdapter(mPlaceListViewAdapter);
+    }
+
+    public void updateViews() {
+        DateFormat df=DateFormat.getDateInstance();
+        mStartDateTextView.setText(df.format(mDataProviderActivity.getStartDate().getTime()));
+        mEndDateTextView.setText(df.format(mDataProviderActivity.getEndDate().getTime()));
+        Place.updateDayCounts(mDataProviderActivity.getStartDate(),mDataProviderActivity.getEndDate());
+        populateSummary();
     }
 
     //**********************************************************************************************

@@ -119,18 +119,10 @@ public class Place {
     }
 
     public void addDateToHistory(Calendar calendar) {
-        calendar.set(Calendar.HOUR,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
         this.mHistory.add(calendar);
     }
 
     public void removeDateFromHistory(Calendar calendar) {
-        calendar.set(Calendar.HOUR,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
         for (Calendar d:mHistory)
             if (d.compareTo(calendar)==0)
                 mHistory.remove(d);
@@ -148,14 +140,10 @@ public class Place {
     public boolean hasRecordForToday() {
         //check whether this already has a record in its history for today
 
-        Calendar today=Calendar.getInstance();
-        today.set(Calendar.HOUR,0);
-        today.set(Calendar.MINUTE,0);
-        today.set(Calendar.SECOND,0);
-        today.set(Calendar.MILLISECOND,0);
         for (Calendar d:mHistory){
-            if (d.compareTo(today)==0)
+            if (d.compareTo(IOUtils.today())==0) {
                 return true;
+            }
             }
         return false;
     }
@@ -170,6 +158,12 @@ public class Place {
                 count++;
         }
         return count;
+    }
+
+    public static void updateDayCounts(Calendar startDate,Calendar endDate) {
+        for (Place p : sPlaces) {
+            p.setDayCount(p.countDaysAt(startDate,endDate));
+        }
     }
 
     //**********************************************************************************************
@@ -270,7 +264,6 @@ public class Place {
         try {
             for (int i = 0; i < jsonArray.length(); i++) {
                 place = fromJSONObject((JSONObject) jsonArray.get(i));
-                place.setDayCount(place.countDaysAt(startDate,endDate));
             }
         } catch (JSONException jsonException) {
             jsonException.printStackTrace();
