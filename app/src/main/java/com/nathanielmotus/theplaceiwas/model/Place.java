@@ -2,6 +2,7 @@ package com.nathanielmotus.theplaceiwas.model;
 
 import android.content.Context;
 import android.location.Location;
+import android.util.Log;
 
 import com.nathanielmotus.theplaceiwas.controller.IOUtils;
 
@@ -10,13 +11,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 
 public class Place {
 
     private String mName;
-    private ArrayList<CustomDate> mHistory;
+    private ArrayList<Calendar> mHistory;
     private Location mLocation;
     private float mAccuracy;
     private boolean mInCalendar;
@@ -27,7 +29,7 @@ public class Place {
     //Constructors
     //**********************************************************************************************
 
-    public Place(String name, ArrayList<CustomDate> history, Location location, float accuracy, boolean inCalendar) {
+    public Place(String name, ArrayList<Calendar> history, Location location, float accuracy, boolean inCalendar) {
         mName = name;
         mHistory = history;
         mLocation = location;
@@ -49,11 +51,11 @@ public class Place {
         mName = name;
     }
 
-    public ArrayList<CustomDate> getHistory() {
+    public ArrayList<Calendar> getHistory() {
         return mHistory;
     }
 
-    public void setHistory(ArrayList<CustomDate> history) {
+    public void setHistory(ArrayList<Calendar> history) {
         mHistory = history;
     }
 
@@ -116,13 +118,21 @@ public class Place {
         sPlaces.add(0,place);
     }
 
-    public void addDateToHistory(CustomDate customDate) {
-        this.mHistory.add(customDate);
+    public void addDateToHistory(Calendar calendar) {
+        calendar.set(Calendar.HOUR,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        this.mHistory.add(calendar);
     }
 
-    public void removeDateFromHistory(CustomDate customDate) {
-        for (CustomDate d:mHistory)
-            if (d.compareTo(customDate)==0)
+    public void removeDateFromHistory(Calendar calendar) {
+        calendar.set(Calendar.HOUR,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        for (Calendar d:mHistory)
+            if (d.compareTo(calendar)==0)
                 mHistory.remove(d);
     }
 
@@ -136,20 +146,26 @@ public class Place {
     }
 
     public boolean hasRecordForToday() {
-        //check whether this already has a record its history for today
+        //check whether this already has a record in its history for today
 
-        for (CustomDate d:mHistory)
-            if (d.compareTo(CustomDate.todayToCustomDate())==0)
+        Calendar today=Calendar.getInstance();
+        today.set(Calendar.HOUR,0);
+        today.set(Calendar.MINUTE,0);
+        today.set(Calendar.SECOND,0);
+        today.set(Calendar.MILLISECOND,0);
+        for (Calendar d:mHistory){
+            if (d.compareTo(today)==0)
                 return true;
-            return false;
+            }
+        return false;
     }
 
     //**********************************************************************************************
     //Calculation
     //**********************************************************************************************
-    public int countDaysAt(CustomDate startDate, CustomDate endDate) {
+    public int countDaysAt(Calendar startDate, Calendar endDate) {
         int count=0;
-        for (CustomDate d : mHistory) {
+        for (Calendar d : mHistory) {
             if (d.compareTo(startDate)>=0 && d.compareTo(endDate)<=0)
                 count++;
         }
@@ -165,6 +181,9 @@ public class Place {
     public static final String JSON_LONGITUDE="longitude";
     public static final String JSON_ACCURACY="accuracy";
     public static final String JSON_IN_CALENDAR="inCalendar";
+    public static final String JSON_YEAR="year";
+    public static final String JSON_MONTH="month";
+    public static final String JSON_DAY_OF_MONTH="dayOfMonth";
 
     public JSONObject toJSONObject() {
         JSONObject jsonObject=new JSONObject();
@@ -198,20 +217,45 @@ public class Place {
 
     private JSONArray getHistoryToJSONArray() {
         JSONArray historyJSONArray=new JSONArray();
-        for (CustomDate d:mHistory)
-            historyJSONArray.put(d.toJSONObject());
+        for (Calendar d:mHistory)
+            historyJSONArray.put(calendarToJSONObject(d));
         return historyJSONArray;
     }
 
-    private static ArrayList<CustomDate> getHistoryFromJSONArray(JSONArray jsonArray) {
-        ArrayList<CustomDate> history=new ArrayList<>();
+    private static ArrayList<Calendar> getHistoryFromJSONArray(JSONArray jsonArray) {
+        ArrayList<Calendar> history=new ArrayList<>();
         try {
             for (int i = 0; i < jsonArray.length(); i++)
-                history.add(CustomDate.fromJSONObject((JSONObject) jsonArray.get(i)));
+                history.add(calendarFromJSONObject((JSONObject) jsonArray.get(i)));
             return history;
         } catch (JSONException jsonException) {
             return null;
         }
+    }
+
+    private static JSONObject calendarToJSONObject(Calendar calendar) {
+        JSONObject jsonObject=new JSONObject();
+        try {
+            jsonObject.put(JSON_YEAR, calendar.get(Calendar.YEAR));
+            jsonObject.put(JSON_MONTH, calendar.get(Calendar.MONTH));
+            jsonObject.put(JSON_DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
+        } catch (JSONException jsonException) {
+            jsonException.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    private static Calendar calendarFromJSONObject(JSONObject jsonObject) {
+        Calendar calendar=Calendar.getInstance();
+        calendar.clear();
+        try {
+            calendar.set(jsonObject.getInt(JSON_YEAR),
+                    jsonObject.getInt(JSON_MONTH),
+                    jsonObject.getInt(JSON_DAY_OF_MONTH));
+        } catch (JSONException jsonException) {
+            jsonException.printStackTrace();
+        }
+        return calendar;
     }
 
     public static JSONArray placesToJSONArray() {
@@ -221,7 +265,7 @@ public class Place {
             return jsonArray;
     }
 
-    public static void createPlacesFromJSONArray(JSONArray jsonArray,CustomDate startDate,CustomDate endDate) {
+    public static void createPlacesFromJSONArray(JSONArray jsonArray,Calendar startDate,Calendar endDate) {
         Place place;
         try {
             for (int i = 0; i < jsonArray.length(); i++) {

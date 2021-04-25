@@ -1,28 +1,23 @@
 package com.nathanielmotus.theplaceiwas.view;
 
-import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.nathanielmotus.theplaceiwas.R;
-import com.nathanielmotus.theplaceiwas.model.CustomDate;
 import com.nathanielmotus.theplaceiwas.model.DataProviderActivity;
 import com.nathanielmotus.theplaceiwas.model.Place;
 
-import java.util.ArrayList;
+import java.text.DateFormat;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -82,10 +77,11 @@ public class SummaryFragment extends Fragment {
         mSummaryListView =getActivity().findViewById(R.id.summary_listview);
 
         mStartDateTextView=getActivity().findViewById(R.id.summary_start_date_text);
-        mStartDateTextView.setText(mDataProviderActivity.getStartDate().toString());
+        DateFormat df=DateFormat.getDateInstance();
+        mStartDateTextView.setText(df.format(mDataProviderActivity.getStartDate().getTime()));
 
         mEndDateTextView=getActivity().findViewById(R.id.summary_end_date_text);
-        mEndDateTextView.setText(mDataProviderActivity.getEndDate().toString());
+        mEndDateTextView.setText(df.format(mDataProviderActivity.getEndDate().getTime()));
 
         mSummaryAddPlaceButton=getActivity().findViewById(R.id.summary_add_button);
         mSummaryAddPlaceButton.setOnClickListener(new View.OnClickListener() {

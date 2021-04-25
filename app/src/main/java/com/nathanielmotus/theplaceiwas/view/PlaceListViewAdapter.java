@@ -10,7 +10,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.nathanielmotus.theplaceiwas.R;
-import com.nathanielmotus.theplaceiwas.model.CustomDate;
 import com.nathanielmotus.theplaceiwas.model.DataProviderActivity;
 import com.nathanielmotus.theplaceiwas.model.Place;
 
@@ -19,15 +18,11 @@ import java.util.ArrayList;
 public class PlaceListViewAdapter extends BaseAdapter {
 
     private ArrayList<Place> mPlaces;
-    private CustomDate mStartDate;
-    private CustomDate mEndDate;
     private Context mContext;
 
     public PlaceListViewAdapter(ArrayList<Place> places, Context context) {
         mPlaces = places;
         mContext = context;
-        mStartDate=new CustomDate(1,1,1,2000);
-        mEndDate=new CustomDate(7,31,12,2100);
     }
 
     @Override
@@ -58,7 +53,6 @@ public class PlaceListViewAdapter extends BaseAdapter {
 
         numberView.setText(Integer.toString(position));
         placeView.setText(mPlaces.get(position).getName());
-//        daysAtView.setText(Integer.toString(mPlaces.get(position).countDaysAt(mStartDate,mEndDate)));
         daysAtView.setText(Integer.toString(mPlaces.get(position).getDayCount()));
         checkBox.setChecked(mPlaces.get(position).isInCalendar());
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

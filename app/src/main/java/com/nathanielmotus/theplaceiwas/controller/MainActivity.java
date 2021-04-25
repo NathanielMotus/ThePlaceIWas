@@ -1,14 +1,12 @@
 package com.nathanielmotus.theplaceiwas.controller;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -20,32 +18,27 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
-import com.nathanielmotus.theplaceiwas.model.CustomDate;
 import com.nathanielmotus.theplaceiwas.model.DataProviderActivity;
 import com.nathanielmotus.theplaceiwas.model.Place;
 import com.nathanielmotus.theplaceiwas.view.SectionsPagerAdapter;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements DataProviderActivity {
 //todo : date picker
     //todo : recyclerview adapter
     
-    private CustomDate mStartDate;
-    private CustomDate mEndDate;
+    private Calendar mStartDate;
+    private Calendar mEndDate;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private Place mNowhereKnownPlace;
+    private DataIOController mDataIOController;
 
     public static final int REQUEST_PERMISSION = 1000;
     private boolean sAccessCoarseLocation = false;
@@ -61,12 +54,13 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         viewPager.setAdapter(mSectionsPagerAdapter);
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
+        mDataIOController=new DataIOController(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        saveData();
+        mDataIOController.saveData();
         savePreferences();
     }
 
@@ -79,7 +73,10 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     protected void onResume() {
         super.onResume();
         loadPreferences();
-        loadData();
+        mDataIOController.setStartDate(mStartDate);
+        mDataIOController.setEndDate(mEndDate);
+        mDataIOController.loadData();
+        mNowhereKnownPlace=Place.getPlaces().get(0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             checkPermissions();
         configureCheckLocationWorker();
@@ -103,12 +100,12 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     //**********************************************************************************************
 
     @Override
-    public CustomDate getStartDate() {
+    public Calendar getStartDate() {
         return mStartDate;
     }
 
     @Override
-    public CustomDate getEndDate() {
+    public Calendar getEndDate() {
         return mEndDate;
     }
 
@@ -121,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                     showNoLocationFoundAlert();
                 else
                     showCreateOrEditPlaceDialog(null,location);
-                Log.i("TEST",location.toString());
             }
         };
 
@@ -264,73 +260,71 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                 .show();
     }
 
-    //**********************************************************************************************
-    //Save and load data
-    //**********************************************************************************************
-    public static final String DATA_FILENAME = "tpiwdata";
-    public static final String JSON_APP_VERSION_CODE = "appVersionCode";
-    public static final String JSON_PLACES = "places";
-    public static final String JSON_NOWHERE_KNOWN="nowhereKnown";
-
-    private void saveData() {
-        IOUtils.saveFileToInternalStorage(getPlacesToJSONObject().toString(), new File(this.getFilesDir(), DATA_FILENAME));
-    }
-
-    private void loadData() {
-        String jsonString=IOUtils.getFileFromInternalStorage(new File(this.getFilesDir(),DATA_FILENAME));
-        JSONObject jsonObject=new JSONObject();
-        Place.clearPlaces();
-        try {
-            jsonObject=new JSONObject(jsonString);
-        } catch (JSONException jsonException) {
-            jsonException.printStackTrace();
-        }
-        loadPlacesFromJSONObject(jsonObject);
-    }
-
-    private JSONObject getPlacesToJSONObject() {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put(JSON_APP_VERSION_CODE, IOUtils.getAppVersionCode(this));
-            jsonObject.put(JSON_NOWHERE_KNOWN,mNowhereKnownPlace.toJSONObject());
-            Place.removePlace(mNowhereKnownPlace);
-            jsonObject.put(JSON_PLACES, Place.placesToJSONArray());
-        } catch (JSONException jsonException) {
-            jsonException.printStackTrace();
-        }
-        return jsonObject;
-    }
-
-    private void loadPlacesFromJSONObject(JSONObject jsonObject) {
-        JSONArray jsonArray=new JSONArray();
-        JSONObject nowhereKnownJSONObject=new JSONObject();
-        try {
-            nowhereKnownJSONObject=jsonObject.getJSONObject(JSON_NOWHERE_KNOWN);
-            jsonArray = jsonObject.getJSONArray(JSON_PLACES);
-        } catch (JSONException jsonException) {
-            nowhereKnownJSONObject=null;
-            jsonArray=null;
-        }
-        if (jsonArray!=null)
-            Place.createPlacesFromJSONArray(jsonArray,mStartDate,mEndDate);
-        if (nowhereKnownJSONObject != null) {
-            mNowhereKnownPlace = Place.fromJSONObject(nowhereKnownJSONObject);
-            mNowhereKnownPlace.setDayCount(mNowhereKnownPlace.countDaysAt(mStartDate,mEndDate));
-        }
-        else
-            mNowhereKnownPlace=new Place("Nowhere known",new ArrayList<>(),new Location(""),500,true);
-        Place.removePlace(mNowhereKnownPlace);
-        Place.addInFirstPositionToPlaces(mNowhereKnownPlace);
-    }
+//    //**********************************************************************************************
+//    //Save and load data
+//    //**********************************************************************************************
+//    public static final String DATA_FILENAME = "tpiwdata";
+//    public static final String JSON_APP_VERSION_CODE = "appVersionCode";
+//    public static final String JSON_PLACES = "places";
+//    public static final String JSON_NOWHERE_KNOWN="nowhereKnown";
+//
+//    private void saveData() {
+//        IOUtils.saveFileToInternalStorage(getPlacesToJSONObject().toString(), new File(this.getFilesDir(), DATA_FILENAME));
+//    }
+//
+//    private void loadData() {
+//        String jsonString=IOUtils.getFileFromInternalStorage(new File(this.getFilesDir(),DATA_FILENAME));
+//        JSONObject jsonObject=new JSONObject();
+//        Place.clearPlaces();
+//        try {
+//            jsonObject=new JSONObject(jsonString);
+//        } catch (JSONException jsonException) {
+//            jsonException.printStackTrace();
+//        }
+//        loadPlacesFromJSONObject(jsonObject);
+//    }
+//
+//    private JSONObject getPlacesToJSONObject() {
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            jsonObject.put(JSON_APP_VERSION_CODE, IOUtils.getAppVersionCode(this));
+//            jsonObject.put(JSON_NOWHERE_KNOWN,mNowhereKnownPlace.toJSONObject());
+//            Place.removePlace(mNowhereKnownPlace);
+//            jsonObject.put(JSON_PLACES, Place.placesToJSONArray());
+//        } catch (JSONException jsonException) {
+//            jsonException.printStackTrace();
+//        }
+//        return jsonObject;
+//    }
+//
+//    private void loadPlacesFromJSONObject(JSONObject jsonObject) {
+//        JSONArray jsonArray=new JSONArray();
+//        JSONObject nowhereKnownJSONObject=new JSONObject();
+//        try {
+//            nowhereKnownJSONObject=jsonObject.getJSONObject(JSON_NOWHERE_KNOWN);
+//            jsonArray = jsonObject.getJSONArray(JSON_PLACES);
+//        } catch (JSONException jsonException) {
+//            nowhereKnownJSONObject=null;
+//            jsonArray=null;
+//        }
+//        if (jsonArray!=null)
+//            Place.createPlacesFromJSONArray(jsonArray,mStartDate,mEndDate);
+//        if (nowhereKnownJSONObject != null) {
+//            mNowhereKnownPlace = Place.fromJSONObject(nowhereKnownJSONObject);
+//            mNowhereKnownPlace.setDayCount(mNowhereKnownPlace.countDaysAt(mStartDate,mEndDate));
+//        }
+//        else
+//            mNowhereKnownPlace=new Place("Nowhere known",new ArrayList<>(),new Location(""),500,true);
+//        Place.removePlace(mNowhereKnownPlace);
+//        Place.addInFirstPositionToPlaces(mNowhereKnownPlace);
+//    }
 
     //**********************************************************************************************
     //Save and load preferences
     //**********************************************************************************************
-    public static final String START_DATE_DAY_OF_WEEK = "startDateDayOfWeek";
     public static final String START_DATE_DAY_OF_MONTH = "startDateDayOfMonth";
     public static final String START_DATE_MONTH = "startDateMonth";
     public static final String START_DATE_YEAR = "startDateYear";
-    public static final String END_DATE_DAY_OF_WEEK = "endDateDayOfWeek";
     public static final String END_DATE_DAY_OF_MONTH = "endDateDayOfMonth";
     public static final String END_DATE_MONTH = "endDateMonth";
     public static final String END_DATE_YEAR = "endDateYear";
@@ -339,27 +333,31 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     private void savePreferences() {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(START_DATE_DAY_OF_WEEK, mStartDate.getDayOfWeek());
-        editor.putInt(START_DATE_DAY_OF_MONTH, mStartDate.getDayOfMonth());
-        editor.putInt(START_DATE_MONTH, mStartDate.getMonth());
-        editor.putInt(START_DATE_YEAR, mStartDate.getYear());
-        editor.putInt(END_DATE_DAY_OF_WEEK, mEndDate.getDayOfWeek());
-        editor.putInt(END_DATE_DAY_OF_MONTH, mEndDate.getDayOfMonth());
-        editor.putInt(END_DATE_MONTH, mEndDate.getMonth());
-        editor.putInt(END_DATE_YEAR, mEndDate.getYear());
+        editor.putInt(START_DATE_DAY_OF_MONTH, mStartDate.get(Calendar.DAY_OF_MONTH));
+        editor.putInt(START_DATE_MONTH, mStartDate.get(Calendar.MONTH));
+        editor.putInt(START_DATE_YEAR, mStartDate.get(Calendar.YEAR));
+        editor.putInt(END_DATE_DAY_OF_MONTH, mEndDate.get(Calendar.DAY_OF_MONTH));
+        editor.putInt(END_DATE_MONTH, mEndDate.get(Calendar.MONTH));
+        editor.putInt(END_DATE_YEAR, mEndDate.get(Calendar.YEAR));
         editor.apply();
     }
 
     private void loadPreferences() {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        mStartDate = new CustomDate(preferences.getInt(START_DATE_DAY_OF_WEEK, 1),
-                preferences.getInt(START_DATE_DAY_OF_MONTH, 1),
-                preferences.getInt(START_DATE_MONTH, 1),
-                preferences.getInt(START_DATE_YEAR, 2000));
-        mEndDate = new CustomDate(preferences.getInt(END_DATE_DAY_OF_WEEK, 7),
-                preferences.getInt(END_DATE_DAY_OF_MONTH, 31),
-                preferences.getInt(END_DATE_MONTH, 12),
-                preferences.getInt(END_DATE_YEAR, 2025));
+        mStartDate=Calendar.getInstance();
+        mStartDate.clear();
+        mStartDate.set(preferences.getInt(START_DATE_YEAR,2000),preferences.getInt(START_DATE_MONTH,0),preferences.getInt(START_DATE_DAY_OF_MONTH,1));
+        mEndDate=Calendar.getInstance();
+        mEndDate.clear();
+        mEndDate.set(preferences.getInt(END_DATE_YEAR,2025),preferences.getInt(END_DATE_MONTH,11),preferences.getInt(END_DATE_DAY_OF_MONTH,31));
+//        mStartDate = new CustomDate(preferences.getInt(START_DATE_DAY_OF_WEEK, 1),
+//                preferences.getInt(START_DATE_DAY_OF_MONTH, 1),
+//                preferences.getInt(START_DATE_MONTH, 1),
+//                preferences.getInt(START_DATE_YEAR, 2000));
+//        mEndDate = new CustomDate(preferences.getInt(END_DATE_DAY_OF_WEEK, 7),
+//                preferences.getInt(END_DATE_DAY_OF_MONTH, 31),
+//                preferences.getInt(END_DATE_MONTH, 12),
+//                preferences.getInt(END_DATE_YEAR, 2025));
     }
 
     //**********************************************************************************************
