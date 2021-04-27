@@ -99,6 +99,38 @@ public class Place {
         mDayCount = dayCount;
     }
 
+    public Calendar getFirstDate() {
+        Calendar firstDate=IOUtils.today();
+        for (Calendar c : mHistory) {
+            if (firstDate.compareTo(c) > 0) {
+                firstDate.set(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DAY_OF_MONTH));
+            }
+        }
+        return firstDate;
+    }
+
+    public static Calendar getAbsoluteFirstDate() {
+        //return date of first record
+        Calendar firstDate=IOUtils.today();
+        for (Place p : sPlaces) {
+            if (firstDate.compareTo(p.getFirstDate()) > 0) {
+                firstDate.set(p.getFirstDate().get(Calendar.YEAR),p.getFirstDate().get(Calendar.MONTH),p.getFirstDate().get(Calendar.DAY_OF_MONTH));
+            }
+        }
+        return firstDate;
+    }
+
+    public static Calendar getRelativeFirstDate(ArrayList<Place> places) {
+        //return date of first record for places
+        Calendar firstDate=IOUtils.today();
+        for (Place p : places) {
+            if (firstDate.compareTo(p.getFirstDate()) > 0) {
+                firstDate.set(p.getFirstDate().get(Calendar.YEAR),p.getFirstDate().get(Calendar.MONTH),p.getFirstDate().get(Calendar.DAY_OF_MONTH));
+            }
+        }
+        return firstDate;
+    }
+
     //**********************************************************************************************
     //Modifiers
     //**********************************************************************************************
@@ -123,9 +155,11 @@ public class Place {
     }
 
     public void removeDateFromHistory(Calendar calendar) {
-        for (Calendar d:mHistory)
-            if (d.compareTo(calendar)==0)
-                mHistory.remove(d);
+        if (mHistory.size()>0) {
+            for (int i=mHistory.size()-1;i>=0;i--)
+                if (mHistory.get(i).compareTo(calendar) == 0)
+                    mHistory.remove(mHistory.get(i) );
+        }
     }
 
     //**********************************************************************************************
@@ -137,6 +171,14 @@ public class Place {
         return this.mLocation.distanceTo(refPlace.mLocation)<=refPlace.mAccuracy;
     }
 
+    public boolean hasRecordFor(Calendar calendar) {
+        for (Calendar c : mHistory) {
+            if (c.compareTo(calendar)==0)
+                return true;
+        }
+        return false;
+    }
+
     public boolean hasRecordForToday() {
         //check whether this already has a record in its history for today
 
@@ -144,10 +186,18 @@ public class Place {
             if (d.compareTo(IOUtils.today())==0) {
                 return true;
             }
-            }
+        }
         return false;
     }
 
+    public static boolean aPlaceHasRecordForToday() {
+        for (Place p : sPlaces) {
+            if (p.hasRecordForToday()) {
+                return true;
+            }
+        }
+        return false;
+    }
     //**********************************************************************************************
     //Calculation
     //**********************************************************************************************

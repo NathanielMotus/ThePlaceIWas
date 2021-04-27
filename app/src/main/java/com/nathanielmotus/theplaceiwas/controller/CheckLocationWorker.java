@@ -18,6 +18,7 @@ public class CheckLocationWorker extends Worker {
 
     Context mContext;
     String mPackageName;
+    boolean mIsLoadOK;
 
     public CheckLocationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -30,9 +31,11 @@ public class CheckLocationWorker extends Worker {
     @Override
     public Result doWork() {
 
+        mIsLoadOK=true;
+
         DataIOController dataIOController=new DataIOController(mContext);
         if (!AppStateChecker.isAppInForeground(mContext,mPackageName)) {
-            dataIOController.loadData();
+            mIsLoadOK=dataIOController.loadData();
             Log.i("TEST","Data loaded : "+Place.getPlaces().size());
         }
 
@@ -64,13 +67,14 @@ public class CheckLocationWorker extends Worker {
                     }
                 }
             }
-            if (!located && !Place.getPlaces().get(0).hasRecordForToday())
+            if (!located && !Place.aPlaceHasRecordForToday())
                 Place.getPlaces().get(0).addDateToHistory(IOUtils.today());
             if(located && Place.getPlaces().get(0).hasRecordForToday())
                 Place.getPlaces().get(0).removeDateFromHistory(IOUtils.today());
         }
 
-        dataIOController.saveData();
+        if(mIsLoadOK)
+            dataIOController.saveData();
 
         return Result.success();
     }

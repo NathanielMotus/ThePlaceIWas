@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,7 @@ public class SummaryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         createCallbackToParentActivity();
+
     }
 
     @Override
@@ -65,7 +67,6 @@ public class SummaryFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-//        populateSummary();
         updateViews();
     }
 
@@ -113,6 +114,7 @@ public class SummaryFragment extends Fragment {
     }
 
     public void updateViews() {
+        //todo : display day of week in date format
         DateFormat df=DateFormat.getDateInstance();
         mStartDateTextView.setText(df.format(mDataProviderActivity.getStartDate().getTime()));
         mEndDateTextView.setText(df.format(mDataProviderActivity.getEndDate().getTime()));

@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
         mDataIOController=new DataIOController(this);
+        loadPreferences();
     }
 
     @Override
@@ -75,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     @Override
     protected void onResume() {
         super.onResume();
-        loadPreferences();
         mDataIOController.setStartDate(mStartDate);
         mDataIOController.setEndDate(mEndDate);
         mDataIOController.loadData();
@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     @Override
     public void onPlaceCheckboxClicked(int position,boolean isChecked) {
         Place.getPlaces().get(position).setInCalendar(isChecked);
+        mSectionsPagerAdapter.getCalendarFragment().updateViews();
     }
 
     @Override
@@ -279,6 +280,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 calendar.set(view.getYear(),view.getMonth(),view.getDayOfMonth());
                 mSectionsPagerAdapter.getSummaryFragment().updateViews();
+                mSectionsPagerAdapter.getCalendarFragment().updateViews();
             }
         },calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();

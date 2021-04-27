@@ -36,7 +36,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return SummaryFragment.newInstance();
             case 1:
-                return CalendarFragment.newInstance("1","2");
+                return CalendarFragment.newInstance();
             default:return null;
         }
     }

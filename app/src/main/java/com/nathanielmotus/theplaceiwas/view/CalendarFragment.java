@@ -2,13 +2,22 @@ package com.nathanielmotus.theplaceiwas.view;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.nathanielmotus.theplaceiwas.R;
+import com.nathanielmotus.theplaceiwas.model.DataProviderActivity;
+import com.nathanielmotus.theplaceiwas.model.Place;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -17,33 +26,20 @@ import com.nathanielmotus.theplaceiwas.R;
  */
 public class CalendarFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private DataProviderActivity mDataProviderActivity;
+    private TextView mHeaderPlace0TextView,mHeaderPlace1TextView,mHeaderPlace2TextView;
+    private TextView mHeaderPlace3TextView,mHeaderPlace4TextView;
+    private RecyclerView mCalendarRecyclerView;
+    private ArrayList<Integer> mCheckedPlacesIndexes=new ArrayList<>();
+    private CalendarRecyclerViewAdapter mRecyclerViewAdapter;
 
     public CalendarFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SummaryDetailFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static CalendarFragment newInstance(String param1, String param2) {
+    public static CalendarFragment newInstance() {
         CalendarFragment fragment = new CalendarFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,10 +47,7 @@ public class CalendarFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        createCallbackToParentActivity();
     }
 
     @Override
@@ -62,5 +55,87 @@ public class CalendarFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_calendar, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        configureViews();
+        updateViews();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    //**********************************************************************************************
+    //Configuration
+    //**********************************************************************************************
+    private void createCallbackToParentActivity() {
+        mDataProviderActivity=(DataProviderActivity)getActivity();
+    }
+
+    private void configureViews() {
+        mCalendarRecyclerView=getActivity().findViewById(R.id.calendar_detail_recyclerview);
+        mCalendarRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        mHeaderPlace0TextView=getActivity().findViewById(R.id.calendar_header_place0_text);
+        mHeaderPlace1TextView=getActivity().findViewById(R.id.calendar_header_place1_text);
+        mHeaderPlace2TextView=getActivity().findViewById(R.id.calendar_header_place2_text);
+        mHeaderPlace3TextView=getActivity().findViewById(R.id.calendar_header_place3_text);
+        mHeaderPlace4TextView=getActivity().findViewById(R.id.calendar_header_place4_text);
+    }
+
+    public void updateViews() {
+        setupCheckedPlacesIndexes();
+
+        if (mCheckedPlacesIndexes.size()>0)
+            mHeaderPlace0TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(0)));
+        else
+            mHeaderPlace0TextView.setText("");
+
+        if (mCheckedPlacesIndexes.size()>1)
+            mHeaderPlace1TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(1)));
+        else
+            mHeaderPlace1TextView.setText("");
+
+        if (mCheckedPlacesIndexes.size()>2)
+            mHeaderPlace2TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(2)));
+        else
+            mHeaderPlace2TextView.setText("");
+
+        if (mCheckedPlacesIndexes.size()>3)
+            mHeaderPlace3TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(3)));
+        else
+            mHeaderPlace3TextView.setText("");
+
+        if (mCheckedPlacesIndexes.size()>4)
+            mHeaderPlace4TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(4)));
+        else
+            mHeaderPlace4TextView.setText("");
+
+        mRecyclerViewAdapter=new CalendarRecyclerViewAdapter(Place.getPlaces(),
+                mCheckedPlacesIndexes,
+                mDataProviderActivity.getStartDate(),
+                mDataProviderActivity.getEndDate(),
+                getContext());
+
+        mCalendarRecyclerView.setAdapter(mRecyclerViewAdapter);
+
+
+    }
+
+    //**********************************************************************************************
+    //Calculation
+    //**********************************************************************************************
+    private void setupCheckedPlacesIndexes() {
+        //put in mPlaceCheckedIndexes the indexes of the first 5 checked for calendar places
+
+        mCheckedPlacesIndexes.clear();
+        for (int i=0;i<Place.getPlaces().size();i++) {
+            if (mCheckedPlacesIndexes.size()<5 && Place.getPlaces().get(i).isInCalendar())
+                mCheckedPlacesIndexes.add(i);
+        }
     }
 }

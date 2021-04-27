@@ -20,6 +20,7 @@ public class DataIOController {
     private Place mNowhereKnownPlace;
     private Calendar mStartDate;
     private Calendar mEndDate;
+    private boolean mIsLoadOK;
 
     public static final String DATA_FILENAME = "tpiwdata";
     public static final String JSON_APP_VERSION_CODE = "appVersionCode";
@@ -57,17 +58,20 @@ public class DataIOController {
         Log.i("TEST","Data saved : "+Place.getPlaces().size());
     }
 
-    public void loadData() {
+    public boolean loadData() {
+        mIsLoadOK=true;
         String jsonString=IOUtils.getFileFromInternalStorage(new File(mContext.getFilesDir(),DATA_FILENAME));
         JSONObject jsonObject=new JSONObject();
         Place.clearPlaces();
         try {
             jsonObject=new JSONObject(jsonString);
         } catch (JSONException jsonException) {
+            mIsLoadOK=false;
             Log.i("TEST","Exception : jsonString pas chargé");
             jsonException.printStackTrace();
         }
         loadPlacesFromJSONObject(jsonObject);
+        return mIsLoadOK;
     }
 
     private JSONObject getPlacesToJSONObject() {
@@ -92,6 +96,7 @@ public class DataIOController {
             jsonArray = jsonObject.getJSONArray(JSON_PLACES);
         } catch (JSONException jsonException) {
             Log.i("TEST","Exception : pas de jsonArray ou pas de nowherKnownJSONObject");
+            mIsLoadOK=false;
             nowhereKnownJSONObject=null;
             jsonArray=null;
         }
