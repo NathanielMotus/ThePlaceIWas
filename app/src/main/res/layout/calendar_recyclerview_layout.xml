@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="10"
         android:id="@+id/calendar_recyclerview_group0_text"
+        android:tag="calendar_recycler_view_text_0"
         android:gravity="center_horizontal"
         android:text="1"/>
     <TextView
@@ -21,13 +22,15 @@
         android:layout_height="wrap_content"
         android:layout_weight="10"
         android:id="@+id/calendar_recyclerview_group1_text"
-        android:gravity="center_horizontal"
+        android:tag="calendar_recycler_view_text_1"
+    android:gravity="center_horizontal"
         android:text="1"/>
     <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="10"
         android:id="@+id/calendar_recyclerview_group2_text"
+        android:tag="calendar_recycler_view_text_2"
         android:gravity="center_horizontal"
         android:text="1"/>
     <TextView
@@ -35,6 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="10"
         android:id="@+id/calendar_recyclerview_group3_text"
+        android:tag="calendar_recycler_view_text_3"
         android:gravity="center_horizontal"
         android:text="1"/>
     <TextView
@@ -42,6 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="10"
         android:id="@+id/calendar_recyclerview_group4_text"
+        android:tag="calendar_recycler_view_text_4"
         android:gravity="center_horizontal"
         android:text="1"/>
 

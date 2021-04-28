@@ -114,7 +114,6 @@ public class SummaryFragment extends Fragment {
     }
 
     public void updateViews() {
-        //todo : display day of week in date format
         DateFormat df=DateFormat.getDateInstance();
         mStartDateTextView.setText(df.format(mDataProviderActivity.getStartDate().getTime()));
         mEndDateTextView.setText(df.format(mDataProviderActivity.getEndDate().getTime()));

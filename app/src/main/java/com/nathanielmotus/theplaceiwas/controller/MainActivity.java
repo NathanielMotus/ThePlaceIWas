@@ -35,8 +35,7 @@ import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements DataProviderActivity {
-    //todo : recyclerview adapter
-    
+
     private Calendar mStartDate;
     private Calendar mEndDate;
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -268,6 +267,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                                 mSectionsPagerAdapter.getSummaryFragment().getSummaryAdapter().notifyDataSetChanged();
                             }
                         });
+                        mSectionsPagerAdapter.getCalendarFragment().updateViews();
                     }
                 })
                 .create()

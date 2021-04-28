@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.nathanielmotus.theplaceiwas.R;
@@ -27,11 +28,21 @@ import java.util.ArrayList;
 public class CalendarFragment extends Fragment {
 
     private DataProviderActivity mDataProviderActivity;
-    private TextView mHeaderPlace0TextView,mHeaderPlace1TextView,mHeaderPlace2TextView;
-    private TextView mHeaderPlace3TextView,mHeaderPlace4TextView;
+    private TextView[] mHeaderTextViews=new TextView[5];
+    public static final String HEADER_ROOT_TAG="calendar_header_text";
     private RecyclerView mCalendarRecyclerView;
     private ArrayList<Integer> mCheckedPlacesIndexes=new ArrayList<>();
     private CalendarRecyclerViewAdapter mRecyclerViewAdapter;
+    private RadioGroup mFilterRadioGroup;
+    private TextView mFilterCountText;
+    private CalendarFilter mCalendarFilter=CalendarFilter.NO_FILTER;
+
+    enum CalendarFilter {
+        NO_FILTER,
+        NONE_OF_THEM,
+        ONE_OF_THEM,
+        ALL_OF_THEM
+    }
 
     public CalendarFragment() {
         // Required empty public constructor
@@ -80,50 +91,54 @@ public class CalendarFragment extends Fragment {
         mCalendarRecyclerView=getActivity().findViewById(R.id.calendar_detail_recyclerview);
         mCalendarRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mHeaderPlace0TextView=getActivity().findViewById(R.id.calendar_header_place0_text);
-        mHeaderPlace1TextView=getActivity().findViewById(R.id.calendar_header_place1_text);
-        mHeaderPlace2TextView=getActivity().findViewById(R.id.calendar_header_place2_text);
-        mHeaderPlace3TextView=getActivity().findViewById(R.id.calendar_header_place3_text);
-        mHeaderPlace4TextView=getActivity().findViewById(R.id.calendar_header_place4_text);
+        for (int i=0;i<5;i++)
+            mHeaderTextViews[i]=getActivity().findViewById(R.id.calendar_header_linear).findViewWithTag(HEADER_ROOT_TAG+i);
+
+        mFilterRadioGroup=getActivity().findViewById(R.id.calendar_radio_group);
+        mFilterRadioGroup.check(R.id.calendar_radio_no_filter);
+        mFilterRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.calendar_radio_no_filter:
+                        mCalendarFilter=CalendarFilter.NO_FILTER;
+                        break;
+                    case R.id.calendar_radio_none_of_them:
+                        mCalendarFilter=CalendarFilter.NONE_OF_THEM;
+                        break;
+                    case R.id.calendar_radio_one_of_them:
+                        mCalendarFilter=CalendarFilter.ONE_OF_THEM;
+                        break;
+                    case R.id.calendar_radio_all_of_them:
+                        mCalendarFilter=CalendarFilter.ALL_OF_THEM;
+                        break;
+                }
+                updateViews();
+            }
+        });
+
+        mFilterCountText=getActivity().findViewById(R.id.calendar_count_text);
     }
 
     public void updateViews() {
         setupCheckedPlacesIndexes();
 
-        if (mCheckedPlacesIndexes.size()>0)
-            mHeaderPlace0TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(0)));
-        else
-            mHeaderPlace0TextView.setText("");
-
-        if (mCheckedPlacesIndexes.size()>1)
-            mHeaderPlace1TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(1)));
-        else
-            mHeaderPlace1TextView.setText("");
-
-        if (mCheckedPlacesIndexes.size()>2)
-            mHeaderPlace2TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(2)));
-        else
-            mHeaderPlace2TextView.setText("");
-
-        if (mCheckedPlacesIndexes.size()>3)
-            mHeaderPlace3TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(3)));
-        else
-            mHeaderPlace3TextView.setText("");
-
-        if (mCheckedPlacesIndexes.size()>4)
-            mHeaderPlace4TextView.setText(Integer.toString(mCheckedPlacesIndexes.get(4)));
-        else
-            mHeaderPlace4TextView.setText("");
+        for (int i=0;i<5;i++)
+            if (mCheckedPlacesIndexes.size()>i)
+                mHeaderTextViews[i].setText(Integer.toString(mCheckedPlacesIndexes.get(i)));
+            else
+                mHeaderTextViews[i].setText("");
 
         mRecyclerViewAdapter=new CalendarRecyclerViewAdapter(Place.getPlaces(),
                 mCheckedPlacesIndexes,
                 mDataProviderActivity.getStartDate(),
                 mDataProviderActivity.getEndDate(),
-                getContext());
+                getContext(),
+                mCalendarFilter);
 
         mCalendarRecyclerView.setAdapter(mRecyclerViewAdapter);
 
-
+        mFilterCountText.setText(Integer.toString(mRecyclerViewAdapter.getItemCount()));
     }
 
     //**********************************************************************************************

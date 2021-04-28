@@ -5,10 +5,64 @@
     android:layout_height="match_parent"
     tools:context=".view.CalendarFragment">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/calendar_filter_linear">
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/calendar_radio_group">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/calendar_radio_no_filter"
+                android:text="No filter"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/calendar_radio_none_of_them"
+                android:text="None of them"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/calendar_radio_one_of_them"
+                android:text="At least one of them"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/calendar_radio_all_of_them"
+                android:text="All of them"/>
+        </RadioGroup>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/calendar_count_title_text"
+            android:gravity="center_horizontal"
+            android:layout_toRightOf="@id/calendar_radio_group"
+            android:padding="10sp"
+            android:text="NUMBER OF DAYS"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/calendar_count_text"
+            android:gravity="center_horizontal"
+            android:layout_below="@id/calendar_count_title_text"
+            android:layout_toRightOf="@id/calendar_radio_group"
+            android:padding="10sp"
+            android:text="365"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_alignBottom="@id/calendar_radio_group"/>
+    </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/calendar_header_linear"
+        android:layout_below="@id/calendar_filter_linear"
         android:orientation="horizontal">
         <TextView
             android:layout_width="0dp"
@@ -20,6 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="10"
             android:id="@+id/calendar_header_place0_text"
+            android:tag="calendar_header_text0"
             android:gravity="center_horizontal"
             android:text="0"/>
         <TextView
@@ -27,6 +82,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="10"
             android:id="@+id/calendar_header_place1_text"
+            android:tag="calendar_header_text1"
             android:gravity="center_horizontal"
             android:text="1"/>
         <TextView
@@ -34,6 +90,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="10"
             android:id="@+id/calendar_header_place2_text"
+            android:tag="calendar_header_text2"
             android:gravity="center_horizontal"
             android:text="2"/>
         <TextView
@@ -41,6 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="10"
             android:id="@+id/calendar_header_place3_text"
+            android:tag="calendar_header_text3"
             android:gravity="center_horizontal"
             android:text="3"/>
         <TextView
@@ -48,10 +106,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="10"
             android:id="@+id/calendar_header_place4_text"
+            android:tag="calendar_header_text4"
             android:gravity="center_horizontal"
             android:text="4"/>
-
     </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_alignBottom="@id/calendar_header_linear"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
