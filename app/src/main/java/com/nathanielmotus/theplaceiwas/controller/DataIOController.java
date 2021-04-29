@@ -3,6 +3,7 @@ package com.nathanielmotus.theplaceiwas.controller;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.util.Log;
 
 import com.nathanielmotus.theplaceiwas.model.Place;
@@ -58,6 +59,12 @@ public class DataIOController {
         Log.i("TEST","Data saved : "+Place.getPlaces().size());
     }
 
+    public void exportData(Uri filenameUri) {
+        if (mNowhereKnownPlace==null)
+            mNowhereKnownPlace=Place.getPlaces().get(0);
+        IOUtils.saveFileToExternalStorage(mContext,getPlacesToJSONObject().toString(),filenameUri);
+    }
+
     public boolean loadData() {
         mIsLoadOK=true;
         String jsonString=IOUtils.getFileFromInternalStorage(new File(mContext.getFilesDir(),DATA_FILENAME));
@@ -67,11 +74,23 @@ public class DataIOController {
             jsonObject=new JSONObject(jsonString);
         } catch (JSONException jsonException) {
             mIsLoadOK=false;
-            Log.i("TEST","Exception : jsonString pas chargé");
+            Log.i("TEST","Exception : jsonString not loaded");
             jsonException.printStackTrace();
         }
         loadPlacesFromJSONObject(jsonObject);
         return mIsLoadOK;
+    }
+
+    public void importData(Uri filenameUri) {
+        String jsonString=IOUtils.readFileFromExternalStorage(mContext,filenameUri);
+        JSONObject jsonObject=new JSONObject();
+        Place.clearPlaces();
+        try {
+            jsonObject = new JSONObject(jsonString);
+        } catch (JSONException jsonException) {
+            jsonException.printStackTrace();
+        }
+        loadPlacesFromJSONObject(jsonObject);
     }
 
     private JSONObject getPlacesToJSONObject() {
@@ -95,7 +114,7 @@ public class DataIOController {
             nowhereKnownJSONObject=jsonObject.getJSONObject(JSON_NOWHERE_KNOWN);
             jsonArray = jsonObject.getJSONArray(JSON_PLACES);
         } catch (JSONException jsonException) {
-            Log.i("TEST","Exception : pas de jsonArray ou pas de nowherKnownJSONObject");
+            Log.i("TEST","Exception : no jsonArray or nowherKnownJSONObject");
             mIsLoadOK=false;
             nowhereKnownJSONObject=null;
             jsonArray=null;

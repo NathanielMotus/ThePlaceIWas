@@ -182,7 +182,6 @@ public class CalendarRecyclerViewAdapter extends RecyclerView.Adapter<CalendarRe
             this.dateText=itemView.findViewById(R.id.calendar_recyclerview_date_text);
             for (int i = 0; i < 5; i++) {
                 this.mTextViews[i]=itemView.findViewWithTag(ROOT_TAG+i);
-                Log.i("TEST",ROOT_TAG+i);
             }
 
         }

@@ -162,6 +162,16 @@ public class Place {
         }
     }
 
+    public static void clearUntil(Calendar calendar) {
+        for (Place p : sPlaces) {
+            for (int i=p.mHistory.size()-1;i>=0;i--) {
+                if (p.mHistory.get(i).compareTo(calendar) <= 0) {
+                    p.mHistory.remove(i);
+                }
+            }
+        }
+    }
+
     //**********************************************************************************************
     //Test
     //**********************************************************************************************

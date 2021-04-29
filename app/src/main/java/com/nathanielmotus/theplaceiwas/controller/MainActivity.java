@@ -3,20 +3,28 @@ package com.nathanielmotus.theplaceiwas.controller;
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.nathanielmotus.theplaceiwas.R;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +37,9 @@ import com.nathanielmotus.theplaceiwas.model.DataProviderActivity;
 import com.nathanielmotus.theplaceiwas.model.Place;
 import com.nathanielmotus.theplaceiwas.view.SectionsPagerAdapter;
 import com.nathanielmotus.theplaceiwas.view.SummaryFragment;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,9 +54,11 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     private DataIOController mDataIOController;
 
     public static final int REQUEST_PERMISSION = 1000;
-    private boolean sAccessCoarseLocation = false;
-    private boolean sAccessFineLocation = false;
+    private boolean sAccessCoarseLocation = true;
+    private boolean sAccessFineLocation = true;
+    private boolean sWriteExternalStorage=true;
 
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +70,15 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
         mDataIOController=new DataIOController(this);
+        configureToolbar();
         loadPreferences();
+        configureCheckLocationWorker();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu,menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -81,7 +102,6 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         mNowhereKnownPlace=Place.getPlaces().get(0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             checkPermissions();
-        configureCheckLocationWorker();
     }
 
     //**********************************************************************************************
@@ -95,6 +115,11 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 //                .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("checkLocationRequest", ExistingPeriodicWorkPolicy.REPLACE,(PeriodicWorkRequest) CheckLocationRequest);
+    }
+
+    private void configureToolbar() {
+        mToolbar=findViewById(R.id.main_activity_toolbar);
+        setSupportActionBar(mToolbar);
     }
 
     //**********************************************************************************************
@@ -142,12 +167,76 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
     @Override
     public void onStartDateTextClicked() {
-        showDatePickerDialog(mStartDate);
+        showDatePickerDialogForBoundaries(mStartDate);
     }
 
     @Override
     public void onEndDateTextClicked() {
-        showDatePickerDialog(mEndDate);
+        showDatePickerDialogForBoundaries(mEndDate);
+    }
+
+    //**********************************************************************************************
+    //Menu events
+    //**********************************************************************************************
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId=item.getItemId();
+        switch (itemId) {
+            case R.id.toolbar_menu_export:
+                Log.i("TEST","Permission : "+sWriteExternalStorage);
+                if (sWriteExternalStorage)
+                    menuItemExport();
+                break;
+            case R.id.toolbar_menu_import:
+                if (sWriteExternalStorage)
+                    menuItemImport();
+                break;
+            case R.id.toolbar_menu_clear_data:
+                menuItemClearData();
+                break;
+        }
+        return true;
+    }
+
+    private void menuItemExport() {
+        Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/*");
+        startActivityForResult(intent,CREATE_DOCUMENT);
+    }
+
+    private void menuItemImport() {
+        Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("*/*");
+        startActivityForResult(intent,OPEN_DOCUMENT);
+    }
+
+    private void menuItemClearData() {
+        showDatePickerDialogForClearingData(IOUtils.today());
+    }
+
+    //**********************************************************************************************
+    //Menu methods
+    //**********************************************************************************************
+    public static final int CREATE_DOCUMENT=1000;
+    public static final int OPEN_DOCUMENT=2000;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == CREATE_DOCUMENT && resultCode == RESULT_OK) {
+            Uri filenameUri=data.getData();
+            mDataIOController.exportData(filenameUri);
+        }
+        if (requestCode == OPEN_DOCUMENT && resultCode == RESULT_OK) {
+            Uri filenameUri=data.getData();
+            mDataIOController.importData(filenameUri);
+            mNowhereKnownPlace=Place.getPlaces().get(0);
+            mSectionsPagerAdapter.getSummaryFragment().updateViews();
+            mSectionsPagerAdapter.getCalendarFragment().updateViews();
+            mDataIOController.saveData();
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     //**********************************************************************************************
@@ -274,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                 .show();
     }
 
-    private void showDatePickerDialog(Calendar calendar) {
+    private void showDatePickerDialogForBoundaries(Calendar calendar) {
         DatePickerDialog datePickerDialog=new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -283,6 +372,21 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                 mSectionsPagerAdapter.getCalendarFragment().updateViews();
             }
         },calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.show();
+    }
+
+    private void showDatePickerDialogForClearingData(Calendar calendar) {
+        DatePickerDialog datePickerDialog=new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                calendar.set(view.getYear(),view.getMonth(),view.getDayOfMonth());
+                Place.clearUntil(calendar);
+                mSectionsPagerAdapter.getSummaryFragment().updateViews();
+                mSectionsPagerAdapter.getCalendarFragment().updateViews();
+            }
+        },calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.setTitle("Clear data");
+        datePickerDialog.setMessage("Enter the date until when you want to clear data");
         datePickerDialog.show();
     }
 
@@ -324,14 +428,16 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     //**********************************************************************************************
     public static final int ACCESS_COARSE_LOCATION_INDEX = 0;
     public static final int ACCESS_FINE_LOCATION_INDEX = 1;
+    public static final int WRITE_EXTERNAL_STORAGE_INDEX=2;
 
 
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            String[] permissionString = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+            String[] permissionString = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
             if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                    || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)
                 requestPermissions(permissionString, REQUEST_PERMISSION);
         }
     }
@@ -342,6 +448,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
         sAccessCoarseLocation = (requestCode == REQUEST_PERMISSION && grantResults[ACCESS_COARSE_LOCATION_INDEX] == PackageManager.PERMISSION_GRANTED);
         sAccessFineLocation = (requestCode == REQUEST_PERMISSION && grantResults[ACCESS_FINE_LOCATION_INDEX] == PackageManager.PERMISSION_GRANTED);
+        sWriteExternalStorage=(requestCode==REQUEST_PERMISSION && grantResults[WRITE_EXTERNAL_STORAGE_INDEX]==PackageManager.PERMISSION_GRANTED);
     }
 
 }
