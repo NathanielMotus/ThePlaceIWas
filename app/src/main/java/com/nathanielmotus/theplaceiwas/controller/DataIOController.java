@@ -6,6 +6,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.util.Log;
 
+import com.nathanielmotus.theplaceiwas.R;
 import com.nathanielmotus.theplaceiwas.model.Place;
 
 import org.json.JSONArray;
@@ -125,7 +126,7 @@ public class DataIOController {
             mNowhereKnownPlace.setDayCount(mNowhereKnownPlace.countDaysAt(mStartDate,mEndDate));
         }
         else
-            mNowhereKnownPlace=new Place("Nowhere known",new ArrayList<>(),new Location(""),500,true);
+            mNowhereKnownPlace=new Place(mContext.getString(R.string.nowhere_known),new ArrayList<>(),new Location(""),500,true);
         Place.removePlace(mNowhereKnownPlace);
         Place.addInFirstPositionToPlaces(mNowhereKnownPlace);
     }

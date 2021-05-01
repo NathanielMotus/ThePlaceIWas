@@ -17,22 +17,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/calendar_radio_no_filter"
-                android:text="No filter"/>
+                android:text="@string/no_filter"/>
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/calendar_radio_none_of_them"
-                android:text="None of them"/>
+                android:text="@string/none_of_them"/>
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/calendar_radio_one_of_them"
-                android:text="At least one of them"/>
+                android:text="@string/at_least_one_of_them"/>
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/calendar_radio_all_of_them"
-                android:text="All of them"/>
+                android:text="@string/all_of_them"/>
         </RadioGroup>
         <TextView
             android:layout_width="match_parent"
@@ -41,7 +41,7 @@
             android:gravity="center_horizontal"
             android:layout_toRightOf="@id/calendar_radio_group"
             android:padding="10sp"
-            android:text="NUMBER OF DAYS"/>
+            android:text="@string/number_of_days"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="50"
-            android:text="Date"/>
+            android:text="@string/date"/>
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"

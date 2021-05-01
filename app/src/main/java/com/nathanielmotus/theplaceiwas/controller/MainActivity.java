@@ -251,12 +251,12 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         if (place != null) {
             accuracy = place.getAccuracy();
             name = place.getName();
-            title = "Edit place";
+            title = getString(R.string.dialog_edit_place);
         }
         else {
             accuracy = 500;
             name = "";
-            title = "New place";
+            title = getString(R.string.dialog_new_place);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -291,14 +291,14 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                 });
             }
         });
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
             }
         });
         if (place != null)
-            builder.setNeutralButton("DELETE", new DialogInterface.OnClickListener() {
+            builder.setNeutralButton(R.string.dialog_delete, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     showDeletePlaceAlert(place);
@@ -310,8 +310,8 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
     private void showNoProviderEnabledAlert() {
         AlertDialog.Builder builder=new AlertDialog.Builder(this);
-        builder.setTitle("No location provider enabled")
-                .setMessage("You must enable location service to create here as a new place")
+        builder.setTitle(R.string.dialog_no_provider)
+                .setMessage(R.string.dialog_enable_service)
                 .setNeutralButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -324,8 +324,8 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
     private void showNoLocationFoundAlert() {
         AlertDialog.Builder builder=new AlertDialog.Builder(this);
-        builder.setTitle("No location found")
-                .setMessage("Location provider was unable to provide a location. Please try again !")
+        builder.setTitle(R.string.dialog_no_location_found)
+                .setMessage(R.string.dialog_unable_to_provide_location)
                 .setNeutralButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -338,15 +338,15 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
 
     private void showDeletePlaceAlert(Place place) {
         AlertDialog.Builder builder=new AlertDialog.Builder(this);
-        builder.setTitle("Delete place")
-                .setMessage("Are you sure you want to delete "+place.getName()+" ?")
-                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.dialog_delete_place)
+                .setMessage(getString(R.string.dialog_delete_alert)+place.getName()+" ?")
+                .setNegativeButton(R.string.dialog_no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
                 })
-                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Place.removePlace(place);
@@ -385,8 +385,8 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
                 mSectionsPagerAdapter.getCalendarFragment().updateViews();
             }
         },calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
-        datePickerDialog.setTitle("Clear data");
-        datePickerDialog.setMessage("Enter the date until when you want to clear data");
+        datePickerDialog.setTitle(getString(R.string.dialog_clear_data));
+        datePickerDialog.setMessage(getString(R.string.dialog_enter_date));
         datePickerDialog.show();
     }
 

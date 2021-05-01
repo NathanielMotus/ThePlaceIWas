@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ThePlaceIWas</string>
+    <string name="tab_text_1">Récapitulatif</string>
+    <string name="tab_text_2">Calendrier</string>
+    <string name="dialog_edit_place">Modifier le lieu</string>
+    <string name="dialog_new_place">Nouveau lieu</string>
+    <string name="dialog_cancel">ANNULER</string>
+    <string name="dialog_delete">EFFACER</string>
+    <string name="dialog_no_provider">Pas de fournisseur de localisation</string>
+    <string name="dialog_enable_service">Vous devez autoriser le service de localisation pour enregistrer ce nouveau lieu</string>
+    <string name="dialog_no_location_found">Localisation impossible</string>
+    <string name="dialog_unable_to_provide_location">Le fournisseur de localisation n\'a pas pu vous localiser</string>
+    <string name="dialog_delete_place">Effacer le lieu</string>
+    <string name="dialog_delete_alert">"Etes-vous sûr de vouloir effacer ce lieu : "</string>
+    <string name="dialog_no">NON</string>
+    <string name="dialog_yes">OUI</string>
+    <string name="dialog_clear_data">Effacer des données</string>
+    <string name="dialog_enter_date">Entrer la date jusqu\'à laquelle vous voulez supprimer les données</string>
+    <string name="no_filter">Pas de filtre</string>
+    <string name="none_of_them">Aucun des lieux</string>
+    <string name="at_least_one_of_them">Au moins un des lieux</string>
+    <string name="all_of_them">Tous les lieux</string>
+    <string name="number_of_days">NOMBRE DE JOURS</string>
+    <string name="date">Date</string>
+    <string name="from">Du</string>
+    <string name="to">Au</string>
+    <string name="add_here_as_a_new_place">Enregistrer ce lieu</string>
+    <string name="place">Lieu</string>
+    <string name="days_at">Jours visités</string>
+    <string name="cal">Cal.</string>
+    <string name="nowhere_known">Pas de lieu connu</string>
+    <string name="name">"Nom : "</string>
+    <string name="accuracy">"Précision : "</string>
+    <string name="export_data">Exporter les données</string>
+    <string name="import_data">Importer les données</string>
+    <string name="clear_data">Supprimer des données</string>
+</resources>
