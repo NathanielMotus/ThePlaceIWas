@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     private boolean sAccessCoarseLocation = true;
     private boolean sAccessFineLocation = true;
     private boolean sWriteExternalStorage=true;
+    private boolean sAccessBackgroundLocation=true;
 
     private Toolbar mToolbar;
 
@@ -111,11 +112,8 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     private void configureCheckLocationWorker() {
         WorkRequest CheckLocationRequest=new PeriodicWorkRequest.Builder(CheckLocationWorker.class,15, TimeUnit.MINUTES)
                 .build();
-//        WorkRequest CheckLocationRequest=new OneTimeWorkRequest.Builder(CheckLocationWorker.class)
-//                .setInitialDelay(10,TimeUnit.SECONDS)
-//                .build();
         WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("checkLocationRequest", ExistingPeriodicWorkPolicy.REPLACE,(PeriodicWorkRequest) CheckLocationRequest);
+                .enqueueUniquePeriodicWork("checkLocationRequest", ExistingPeriodicWorkPolicy.KEEP,(PeriodicWorkRequest) CheckLocationRequest);
     }
 
     private void configureToolbar() {
@@ -430,15 +428,18 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
     public static final int ACCESS_COARSE_LOCATION_INDEX = 0;
     public static final int ACCESS_FINE_LOCATION_INDEX = 1;
     public static final int WRITE_EXTERNAL_STORAGE_INDEX=2;
+    public static final int ACCESS_BACKGROUND_LOCATION_INDEX=3;
 
 
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            String[] permissionString = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            String[] permissionString = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION};
 
             if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)
+                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED
+                    ||checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)!=PackageManager.PERMISSION_GRANTED)
                 requestPermissions(permissionString, REQUEST_PERMISSION);
         }
     }
@@ -450,6 +451,7 @@ public class MainActivity extends AppCompatActivity implements DataProviderActiv
         sAccessCoarseLocation = (requestCode == REQUEST_PERMISSION && grantResults[ACCESS_COARSE_LOCATION_INDEX] == PackageManager.PERMISSION_GRANTED);
         sAccessFineLocation = (requestCode == REQUEST_PERMISSION && grantResults[ACCESS_FINE_LOCATION_INDEX] == PackageManager.PERMISSION_GRANTED);
         sWriteExternalStorage=(requestCode==REQUEST_PERMISSION && grantResults[WRITE_EXTERNAL_STORAGE_INDEX]==PackageManager.PERMISSION_GRANTED);
+        sAccessBackgroundLocation=(requestCode==REQUEST_PERMISSION && grantResults[ACCESS_BACKGROUND_LOCATION_INDEX]==PackageManager.PERMISSION_GRANTED);
     }
 
 }

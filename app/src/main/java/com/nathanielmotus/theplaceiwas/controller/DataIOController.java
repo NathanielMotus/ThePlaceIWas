@@ -115,7 +115,7 @@ public class DataIOController {
             nowhereKnownJSONObject=jsonObject.getJSONObject(JSON_NOWHERE_KNOWN);
             jsonArray = jsonObject.getJSONArray(JSON_PLACES);
         } catch (JSONException jsonException) {
-            Log.i("TEST","Exception : no jsonArray or nowherKnownJSONObject");
+            Log.i("TEST","Exception : no jsonArray or nowhereKnownJSONObject");
             mIsLoadOK=false;
             nowhereKnownJSONObject=null;
             jsonArray=null;

@@ -1,10 +1,8 @@
 package com.nathanielmotus.theplaceiwas.controller;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -14,9 +12,6 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.nathanielmotus.theplaceiwas.model.Place;
-
-import java.util.Calendar;
-import java.util.logging.LogRecord;
 
 public class CheckLocationWorker extends Worker {
 
